@@ -20,8 +20,8 @@ const followingSite_l = document.getElementById("followingSite");
 const followingList_l = document.getElementById("followingList");
 const channelSite_l = document.getElementById("channelSite");
 const channelContent_l = document.getElementById("channelContent");
-const channelSiteH2_l = document.getElementById("channelSiteH2")
-
+const channelSiteH2_l = document.getElementById("channelSiteH2");
+const channelSiteFollowBtn = document.getElementById("channelSiteFollowBtn");
 const imageProbe_l = document.getElementById("imageProbe");
 
 let userId = null;
@@ -32,8 +32,11 @@ let lisu = "";
 let imgLiked = false;
 let following = [];
 let followed = false;
+let currentChannelImages = null;
+let currentChannelOwnerId = null;
+let currentChannelName = null;
 
-function showLoggedInBtns() {
+function showLoggedInButtons() {
     document.querySelectorAll(".loggedOutHeaderBtn").forEach(btn =>{
         btn.style.display = "none";
     })
@@ -69,7 +72,7 @@ async function userHasJWT() {
         localStorage.setItem("jwToken", data.jwToken);
         userId = data.userId;
         following = data.following || [];
-        showLoggedInBtns();
+        showLoggedInButtons();
         goToHomePage.style.display = "none"
 
 
@@ -102,11 +105,52 @@ async function deleteAccount() {
     location.reload();
 }
 
+function resizeChannel() {
+    if (!currentChannelImages) return;
+
+    styleChannelImages(
+        currentChannelImages, 
+        channelContent_l, 
+        window.innerWidth
+    );
+}
+
+function updateLikeAndFollowButtons(imageNumber) {
+    if (userId != images[imageNumber].owner._id && userId) {
+        likeBtn_l.style.display = "block";
+        followBtn_l.style.display = "block";
+        if (images[imageNumber].likes.includes(userId)) {
+            imgLiked = true;
+            likeBtn_l.src = "styleImages/heartRB.png";
+        } else {
+            imgLiked = false;
+            likeBtn_l.src = "styleImages/heartWB.png";
+        }
+        if (following.some(user => user._id === images[imageNumber].owner._id)) {
+            followBtn_l.src = "styleImages/unfollow.png";
+            followBtn_l.title = "Unfollow"
+            followed = true;
+        } else {
+            followBtn_l.src = "styleImages/follow.png";
+            followBtn_l.title = "Follow"
+            followed = false;
+        }
+    } else {
+        likeBtn_l.style.display = "none";
+        followBtn_l.style.display = "none";
+    }
+}
+
+window.addEventListener("resize", resizeChannel);
+
+
+(async ()=>{
+
 if (localStorage.getItem("jwToken"))  {
     userHasJWT();
 }
 
-fetch("/api/images")
+await fetch("/api/images")
 .then(res => res.json())
 .then(files => {
     images = files;
@@ -116,31 +160,10 @@ fetch("/api/images")
         currentImg = randomImg;
         postImg.src = "../images/" + images[randomImg].filename;
         imgH2_l.innerText = images[randomImg].owner?.username ?? "Unknown user";
-        if (userId != images[randomImg].owner._id && userId) {
-            likeBtn_l.style.display = "block";
-            followBtn_l.style.display = "block";
-            if (images[randomImg].likes.includes(userId)) {
-                imgLiked = true;
-                likeBtn_l.src = "styleImages/heartRB.png";
-            } else {
-                likeBtn_l.src = "styleImages/heartWB.png";
-            }
-            if (following.some(user => user.id === images[randomImg].owner._id)) {
-                followBtn_l.src = "styleImages/unfollow.png";
-                followBtn_l.title = "Unfollow"
-                followed = true;
-            } else {
-                followBtn_l.src = "styleImages/follow.png";
-                followBtn_l.title = "Follow"
-                followed = false;
-            }
-        } else {
-            likeBtn_l.style.display = "none";
-            followBtn_l.style.display = "none";
-        }
+        updateLikeAndFollowButtons(randomImg)
     }
 })
-
+})()
 
 
 postImg.addEventListener("click", ()=>{
@@ -153,28 +176,7 @@ postImg.addEventListener("click", ()=>{
         currentImg = randomImg;
         postImg.src = "../images/" + images[randomImg].filename;
         imgH2_l.innerText = images[randomImg].owner?.username ?? "Unknown user";
-        if (userId != images[randomImg].owner._id && userId) {
-            likeBtn_l.style.display = "block";
-            followBtn_l.style.display = "block";
-            if (images[randomImg].likes.includes(userId)) {
-                imgLiked = true;
-                likeBtn_l.src = "styleImages/heartRB.png";
-            } else {
-                likeBtn_l.src = "styleImages/heartWB.png";
-            }
-            if (following.some(user => user.id === images[randomImg].owner._id)) {
-                followBtn_l.src = "styleImages/unfollow.png";
-                followBtn_l.title = "Unfollow"
-                followed = true;
-            } else {
-                followBtn_l.src = "styleImages/follow.png";
-                followBtn_l.title = "Follow"
-                followed = false;
-            }
-        } else {
-            likeBtn_l.style.display = "none";
-            followBtn_l.style.display = "none";
-        }
+        updateLikeAndFollowButtons(randomImg)
     } else {
         console.log("The images aren't loading right now.")
     }
@@ -202,7 +204,7 @@ likeBtn_l.addEventListener("click", async ()=>{
         imgLiked = true;
     } else {
         response = await fetch("/api/unlike", {
-            method: "POST",
+            method: "DELETE",
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${jwToken}`
@@ -246,7 +248,7 @@ showDeleteAcctForm.addEventListener("click", ()=>{
     lisuSubmitBtn_l.innerText = "Delete Account"
     hideAllElements()
     lisuForm_l.style.display = "block";
-    showLoggedInBtns();
+    showLoggedInButtons();
     showDeleteAcctForm.style.display = "none"
     
 })
@@ -279,7 +281,7 @@ lisuForm_l.addEventListener("submit", async (e)=>{
                 body: JSON.stringify({ username: lisuInput1_l.value, password: lisuInput2_l.value })
             })
         } else if (lisu === "da") {
-            deleteAccount();
+            await deleteAccount();
             return;
         }
         
@@ -303,7 +305,7 @@ lisuForm_l.addEventListener("submit", async (e)=>{
         lisuInput2_l.value = "";
         jwToken = data.jwToken;
         localStorage.setItem("jwToken", jwToken);
-        showLoggedInBtns();
+        showLoggedInButtons();
         goToHomePage.style.display = "none"
 
         alert(data.message)
@@ -331,7 +333,7 @@ followBtn_l.addEventListener("click", async (e)=>{
         followed = false;
         followBtn_l.title = "Follow"
         following = following.filter(
-            id => id !== images[currentImg].owner._id
+            user => user._id !== images[currentImg].owner._id
         );
         followBtn_l.src = "styleImages/follow.png";
     } else {
@@ -345,14 +347,14 @@ followBtn_l.addEventListener("click", async (e)=>{
         })
 
         if (!response.ok) {
-            console.error("Somethink went wrong")
+            console.error("Something went wrong")
             return;
         }
 
         followed = true;
         followBtn_l.title = "UnFollow"
         following.push({
-            id: images[currentImg].owner._id,
+            _id: images[currentImg].owner._id,
             username: images[currentImg].owner.username
         });
         followBtn_l.src = "styleImages/unfollow.png";
@@ -369,7 +371,7 @@ document.getElementById("goToUploadPage").addEventListener("click", ()=>{
 })
 
 goToFollowingPage.addEventListener("click", ()=>{
-    showLoggedInBtns();
+    showLoggedInButtons();
     goToFollowingPage.style.display = "none"
     hideAllElements();
     header_l.style.display = "flex"
@@ -379,7 +381,7 @@ goToFollowingPage.addEventListener("click", ()=>{
         const a = document.createElement("a");
         a.classList = "followedChannelA";
         a.innerText = user.username;
-        a.dataset.userId = user.id;
+        a.dataset.userId = user._id;
         a.dataset.username = user.username;
         a.href = "#";
         a.style.display = "block";
@@ -392,65 +394,103 @@ document.addEventListener("click", async (e)=>{
     const a = e.target.closest(".followedChannelA");
     if (!a || !a.dataset.userId) return;
 
-    const channelId = a.dataset.userId;
+    currentChannelOwnerId = a.dataset.userId;
+    currentChannelName = a.dataset.username;
 
     const response = await fetch("/api/images/otherChannel", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ channelId })
+        body: JSON.stringify({ channelId: currentChannelOwnerId })
     })
  
     if (!response.ok) return;
 
-    followingSite_l.style.display = "none";
-    channelSite_l.style.display = "block";
-    channelSiteH2_l.innerText = a.dataset.username;
-    const images = await response.json();
+    if (following.some(user => user._id === currentChannelOwnerId)) {
+        followed = true;
+        channelSiteFollowBtn.innerText = "Unfollow"
+    } else {
+        followed = false;
+        channelSiteFollowBtn.innerText = "Follow"
+    }
 
-    styleChannelImages(images, channelContent_l, imageProbe_l, window.innerWidth);
-  
+    showLoggedInButtons();
+    followingSite_l.style.display = "none"
+    showDeleteAcctForm.style.display = "none";
+    channelSite_l.style.display = "block";
+    channelSiteH2_l.innerText = currentChannelName;
+    currentChannelImages = await response.json();
+
+    resizeChannel();
 })
 
 document.addEventListener("click", (e)=>{
     const img = e.target.closest(".channelImage");
     if (!img) return;
-    showLoggedInBtns();
-    goToHomePage.style.display = "none";
+    const imageNumber = Number(img.dataset.imageNumber);
     postImg.src = img.src;
-    const imageNumber = img.dataset.imageNumber;
+    showLoggedInButtons();
+    goToHomePage.style.display = "none";
+    imgH2_l.innerText = currentChannelImages[imageNumber].owner?.username ?? "Unknown user"
+    currentImg = images.findIndex(
+        image => image._id === currentChannelImages[imageNumber]._id
+    );
     hideAllElements();
 
-    if (userId != images[imageNumber].owner._id && userId) {
-        likeBtn_l.style.display = "block";
-        followBtn_l.style.display = "block";
-        if (images[imageNumber].likes.includes(userId)) {
-            imgLiked = true;
-            likeBtn_l.src = "styleImages/heartRB.png";
-        } else {
-            likeBtn_l.src = "styleImages/heartWB.png";
-        }
-        if (following.some(user => user.id === images[imageNumber].owner._id)) {
-            followBtn_l.src = "styleImages/unfollow.png";
-            followBtn_l.title = "Unfollow"
-            followed = true;
-        } else {
-            followBtn_l.src = "styleImages/follow.png";
-            followBtn_l.title = "Follow"
-            followed = false;
-        }
-    } else {
-        likeBtn_l.style.display = "none";
-        followBtn_l.style.display = "none";
-    }
+    updateLikeAndFollowButtons(currentImg);
 
     header_l.style.display = "flex";
     imgDiv_l.style.display = "block";
 })
 
 goToHomePage.addEventListener("click", ()=>{
-    showLoggedInBtns();
+    showLoggedInButtons();
     goToHomePage.style.display = "none";
     hideAllElements();
     imgDiv_l.style.display = "block";
     header_l.style.display = "flex"
+})
+
+channelSiteFollowBtn.addEventListener("click", async ()=>{
+    if (followed) {
+        const response = await fetch("/api/unfollow", {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${jwToken}`
+            },
+            body: JSON.stringify({ userToFollowId: currentChannelOwnerId})
+        })
+
+        if (!response.ok) {
+            console.error("Somethink went wrong")
+            return;
+        }
+
+        followed = false;
+        channelSiteFollowBtn.innerText = "Follow";
+        following = following.filter(
+            user => user._id !== currentChannelOwnerId
+        );
+    } else {
+        const response = await fetch("/api/follow", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${jwToken}`
+            },
+            body: JSON.stringify({ userToFollowId: currentChannelOwnerId})
+        })
+
+        if (!response.ok) {
+            console.error("Somethink went wrong")
+            return;
+        }
+
+        followed = false;
+        channelSiteFollowBtn.innerText = "Unfollow";
+        following.push({
+            _id: currentChannelOwnerId,
+            username: currentChannelName
+        })
+    }
 })

@@ -1,15 +1,9 @@
-export function styleChannelImages(images, channelContent_l, imageProbe_l, w) {
-/*
-    for (let i = 0; i < images.length; i++) {
-        imageProbe_l.src = "images/" + images[i].filename;
-        console.log(imageProbe_l.naturalWidth)
-        if (imageProbe_l.naturalWidth >= imageProbe_l.naturalHeight) {
-            const allImagesTogetherLength
-        }
-    } 
-*/
-    console.log(images)
-    const imagesPerLine = Math.floor(w/210);
+export function styleChannelImages(images, channelContent_l, w) {
+    if (!images.length) {
+        channelContent_l.innerHTML = "";
+        return;
+    }
+    const imagesPerLine = Math.max(1, Math.floor(w/204));
     let createdImages = 0;
     const lines = Math.ceil(images.length / imagesPerLine);
     channelContent_l.innerHTML = "";

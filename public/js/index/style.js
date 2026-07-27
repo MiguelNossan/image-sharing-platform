@@ -18,7 +18,7 @@ function styling() {
 
     let w = innerWidth;
     let h = innerHeight;
-    let mainMT = 65;
+    let mainMT = 70;
     let headerBR = 2;
     let headerBtnFS = 16;
     let headerBtnW = 90;
@@ -63,7 +63,7 @@ function styling() {
             headerBtnFS = 11;
             headerBtnW = 65;
         } else if (w < 400) {
-            mainMT = 50;
+            mainMT = 55;
             headerBtnH = 40;
             headerBtnM = "auto 2px"
 
@@ -78,7 +78,7 @@ function styling() {
                 headerBtnW = 40;
             } else if (w < 250) {
                 headerBtnM = "auto 0"
-                mainMT = 30;
+                mainMT = 35;
                 headerBtnH = 20;
                 headerBR = 0;
                 headerBtnFS = 4;
@@ -127,7 +127,7 @@ function styling() {
     }
     
 
-    header.style.height = mainMT + "px";
+    header.style.height = mainMT - 5 + "px";
     header.style.borderRadius = `0 0 ${headerBR}em ${headerBR}em`
     headerBtns.forEach(btn => {
         btn.style.margin = headerBtnM;
@@ -151,28 +151,40 @@ function styling() {
 
 
 
-    for (let i = 0.9; i > 0.03; i -= 0.02) {
-        i = Number(i.toFixed(5));
-        if ((h*0.9)-mainMT >= (w*i)*ihn) {
-            main.style.marginTop = mainMT + "px"
-            main.style.height = (h*0.9)-mainMT + "px"
-            imgDiv.style.width = w*i + "px";
-            imgDiv.style.height = (w*i)*ihn + "px";
-            imgH2.style.fontSize = 0.045*(w*i) + "px";
-            postImgStyle.style.width = w*i + "px";
-            postImgStyle.style.height = (w*i)*ihn + "px";
-            postImgStyle.style.borderRadius = "3dvw"
-            postImgStyle.style.border = "3px solid black"        
-            break;
+    main.style.marginTop = mainMT + "px"
+    main.style.height = (h*0.9)-mainMT + "px"
+
+    if (w >= h) {
+        const imageSideLength = (h * 0.9) - mainMT;
+        imgDiv.style.width = imageSideLength + 6 + "px";
+        imgDiv.style.height = imageSideLength + 6 + "px"; 
+        postImgStyle.style.width = imageSideLength + "px";
+        postImgStyle.style.height = imageSideLength + "px";
+        postImgStyle.style.borderRadius = (h * 0.05) - 3.5 + "px"; 
+        
+        imgH2.style.fontSize = Math.max(20, h * 0.08) + "px"
+        while (imgH2.scrollWidth > postImgStyle.clientWidth * 0.9) {
+            const size = parseFloat(imgH2.style.fontSize);
+            imgH2.style.fontSize = (size - 1) + "px";             
+        }
+    } else {
+        postImgStyle.style.width = (w * 0.9) - 65 + "px";
+        postImgStyle.style.height = (w * 0.9) - 65 + "px";
+        postImgStyle.style.borderRadius = (w * 0.05) - 3.5 + "px";
+        imgH2.style.fontSize = Math.max(20, h * 0.08) + "px"
+        while (imgH2.scrollWidth > postImgStyle.clientWidth * 0.9) {
+            const size = parseFloat(imgH2.style.fontSize);
+            imgH2.style.fontSize = (size - 1) + "px";             
         }
     }
-
-
-
+    postImgStyle.style.border = "3px solid black"
 }
-
+/*
 setInterval(()=>{
     styling();
 }, 300)
+*/
 
+window.addEventListener("resize", styling);
+window.addEventListener("load", styling);
 styling();

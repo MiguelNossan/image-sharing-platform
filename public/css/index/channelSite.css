@@ -1,0 +1,49 @@
+#channelSite {
+    display: none;
+    position: absolute;
+    width: 100dvw;
+    top: 65px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+}
+
+#firstChannelSiteDiv {
+    display: flex; 
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+#channelSite h2 {
+    font-size: clamp(1.3vw, 40px, 9vw);
+    margin: 0;
+}
+
+#channelSite button {
+    margin: 0;
+    height: auto;
+    background-color: rgb(121, 117, 136);
+    font-size: clamp(0.8vw, 25px, 5vw);
+    width: clamp(4vw, 125px, 25vw);
+    border-radius: 5px;
+}
+
+#channelContent div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 210px;
+    border-top: 1px solid black;
+}
+
+.channelImage {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    
+    margin: 0 5px 0 5px;
+    border: 1px solid black;
+    border-radius: 10px;
+}
+

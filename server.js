@@ -79,6 +79,8 @@ app.post(
     "/api/images/otherChannel",
     asyncHandler(async (req, res)=>{
         const images = await Image.find({ owner: req.body.channelId })
+        .populate("owner", "username")
+        .lean();
         res.json(images);
     })
 );
@@ -210,7 +212,7 @@ app.post('/api/jwtlogin', authMiddleware, async (req, res)=>{
             jwToken: newJWT,
             userId: req.user._id,
             following: populatedUser.following.map(user => ({
-                id: user._id,
+                _id: user._id,
                 username: user.username
             }))
         })
@@ -281,7 +283,7 @@ app.post(
     })
 );
 
-app.post(
+app.delete(
     "/api/unlike", 
     authMiddleware, 
     asyncHandler(async (req, res)=>{

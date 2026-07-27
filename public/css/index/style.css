@@ -32,12 +32,18 @@ main {
     top: 40%;
 }
 
+#postImg {
+    display: block;
+    object-fit: cover;
+}
+
 #imgDiv h2 {
     position: absolute;
-    top: 85%;
+    bottom: 0%;
     left: 5%;
     font-size: 50px;
     font-weight: 700;
+    margin: 0;
     background: linear-gradient(
         to right, 
         #ef5350, 
@@ -50,7 +56,9 @@ main {
         #f9a825, 
         #ff5722
     );
+    background-clip: text;
     -webkit-background-clip: text;
+    color: transparent;
     -webkit-text-fill-color: transparent;
 
     filter:
@@ -157,40 +165,3 @@ form button:active {
 #followingList a {
     font-size: clamp(0.8vw, 20px, 4.5vw);
 }
-
-
-#channelSite {
-    display: none;
-    position: absolute;
-    width: 100dvw;
-    top: 65px;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-#channelSite h2 {
-    font-size: clamp(1.3vw, 40px, 9vw);
-    margin: 0 0 5px 0;
-    text-align: center;
-}
-
-
-#channelContent div {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 210px;
-    border-bottom: 1px solid black;
-}
-
-.channelImage {
-    max-width: 200px;
-    max-height: 200px;
-    width: auto;
-    height: auto;
-    
-    margin: 0 5px 0 5px;
-    border: 1px solid black;
-    border-radius: 10px;
-}
-
