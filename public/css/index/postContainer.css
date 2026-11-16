@@ -1,0 +1,128 @@
+:root {
+    --comment-size: min(95vw, 90vh - 60px);
+}
+
+#postContainer {
+    border: 3px solid black;
+    background-color: black;
+    position: relative;
+    width: min(95vw, calc(90vh - 65px));
+    aspect-ratio: 1 / 1;
+    border-radius: 5%;
+    margin: auto;
+}
+
+#like, #follow, #openCommentsBtn {
+    display: none;
+    position: absolute;
+    height: 10%;
+    width: auto;
+    right: 1%;
+}
+
+#like {
+    top: 30%;
+}
+
+#follow {
+    top: 40%;
+}
+
+#openCommentsBtn {
+    top: 50%;
+}
+
+#postImage {
+    display: block;
+    object-fit: cover;
+    width: min(95vw, calc(90vh - 65px));
+    aspect-ratio: 1 / 1;
+    border-radius: 5%;
+}
+
+#ownerName {
+    position: absolute;
+    bottom: 0%;
+    left: 7%;
+    font-size: 50px;
+    font-weight: 700;
+    margin: 0;
+    background: linear-gradient(
+        to right, 
+        #ef5350, 
+        #f48fb1, 
+        #7e57c2, 
+        #2196f3, 
+        #26c6da, 
+        #43a047, 
+        #eeff41, 
+        #f9a825, 
+        #ff5722
+    );
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+
+    filter:
+        drop-shadow(1px 1px 1px black)
+        drop-shadow(2px 2px 1px black);
+}
+
+#commentContainer {
+    display: none;
+    position: absolute;
+    background-color: rgba(142, 133, 133, 0.9);
+    overflow: hidden;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 5%;
+    z-index: 10;
+    text-align: center;
+}
+
+#closeComments {
+    position: absolute;
+    height: 5%;
+    aspect-ratio: 1 / 1;
+    right: 2%;
+    top: 2%;
+}
+
+#commentContainerTitle {
+    font-size: clamp(calc(var(--comment-size) / 23), 40px, calc(var(--comment-size) / 13));
+    margin: clamp(calc(var(--comment-size) / 100), 4px, calc(var(--comment-size) / 60));
+}
+
+#commentInput {
+    font-size: clamp(calc(var(--comment-size) / 35), 25px, calc(var(--comment-size) / 20));
+}
+
+#commentButton {
+    display: block;
+    font-size: clamp(calc(var(--comment-size) / 35), 25px, calc(var(--comment-size) / 20));
+    margin: auto;
+}
+
+.commenterUsername {
+    font-size: clamp(calc(var(--comment-size) / 35), 25px, calc(var(--comment-size) / 20));
+    margin: 0 auto;
+}
+
+.commentText {
+    font-size: clamp(calc(var(--comment-size) / 44), 19px, calc(var(--comment-size) / 25));
+    margin: 0 auto;
+    overflow-wrap: break-word;
+    max-width: 500px;
+}
+
+.commentLikeBtn {
+    width: clamp(calc(var(--comment-size) / 35), 25px, calc(var(--comment-size) / 20));
+    aspect-ratio: 1 / 1;
+}
+
+
+
+

@@ -1,61 +1,75 @@
-import { styleChannelImages } from "./channelSite.js"
-
-const header_l = document.querySelector("header");
+const navigationContainer = document.getElementById("navigationContainer");
+const navigationMenu = document.getElementById("navigationMenu");
+const navigationButtons = document.querySelectorAll(".navigationButton");
 const goToHomePage = document.getElementById("goToHomePage");
 const showDeleteAcctForm = document.getElementById("showDeleteAcctForm");
 const goToFollowingPage = document.getElementById("goToFollowingPage");
-const postImg = document.getElementById("postImg");
-const likeBtn_l = document.getElementById("like");
-const followBtn_l = document.getElementById("follow");
-const imgDiv_l = document.getElementById("imgDiv");
-const lisuForm_l = document.getElementById("lisuForm");
-const lisuH1_l = document.getElementById("lisuH1");
-const lisuSubmitBtn_l = document.getElementById("lisuSubmitBtn");
-const lisuInput1_l = document.getElementById("lisuInput1");
-const lisuInput2_l = document.getElementById("lisuInput2");
-const loader_l = document.getElementById("loader");
-const imgH2_l = document.getElementById("imgH2");
-const main_l = document.querySelector("main");
-const followingSite_l = document.getElementById("followingSite");
-const followingList_l = document.getElementById("followingList");
-const channelSite_l = document.getElementById("channelSite");
-const channelContent_l = document.getElementById("channelContent");
-const channelSiteH2_l = document.getElementById("channelSiteH2");
+const postImage = document.getElementById("postImage");
+const likeBtn = document.getElementById("like");
+const followBtn = document.getElementById("follow");
+const openCommentsBtn = document.getElementById("openCommentsBtn");
+const postContainer = document.getElementById("postContainer");
+const authForm = document.getElementById("authForm");
+const authFormTitle = document.getElementById("authFormTitle");
+const authSubmitBtn = document.getElementById("authSubmitBtn");
+const authUsernameInput = document.getElementById("authUsernameInput");
+const authPasswordInput = document.getElementById("authPasswordInput");
+const loader = document.getElementById("loader");
+const ownerName = document.getElementById("ownerName");
+const main = document.querySelector("main");
+const followingSite = document.getElementById("followingSite");
+const followingList = document.getElementById("followingList");
+const channelSite = document.getElementById("channelSite");
+const channelContent = document.getElementById("channelContent");
+const channelSiteH2 = document.getElementById("channelSiteH2");
 const channelSiteFollowBtn = document.getElementById("channelSiteFollowBtn");
-const imageProbe_l = document.getElementById("imageProbe");
+const imageProbe = document.getElementById("imageProbe");
+const goToProfilePage = document.getElementById("goToProfilePage");
+const commentContainer = document.getElementById("commentContainer");
+const commentInput = document.getElementById("commentInput");
+const commentsDiv = document.getElementById("comments");
 
 let userId = null;
+let username = null;
 let jwToken = '';
 let currentImg = -1;
 let images = [];
-let lisu = "";
+let authFormAction = "";
 let imgLiked = false;
 let following = [];
 let followed = false;
 let currentChannelImages = null;
 let currentChannelOwnerId = null;
 let currentChannelName = null;
+let sidebarVisible = true;
+
 
 function showLoggedInButtons() {
-    document.querySelectorAll(".loggedOutHeaderBtn").forEach(btn =>{
+    document.querySelectorAll(".loggedOutNavigationButton").forEach(btn =>{
         btn.style.display = "none";
     })
 
-    document.querySelectorAll(".loggedInHeaderBtn").forEach(btn =>{
+    document.querySelectorAll(".loggedInNavigationButton").forEach(btn =>{
         btn.style.display = "block";
     })
 
-    likeBtn_l.style.display = "block";
-    followBtn_l.style.display = "block";
+    likeBtn.style.display = "block";
+    followBtn.style.display = "block";
+    openCommentsBtn.style.display = "block";
+}
+
+function activateNavigationButton(button) {
+    navigationButtons.forEach(btn => btn.classList.remove("active"));
+    button.classList.add("active");
 }
 
 function hideAllElements() {
-    header_l.style.display = "none";
-    imgDiv_l.style.display = "none";
-    loader_l.style.display = "none";
-    lisuForm_l.style.display = "none";
-    followingSite_l.style.display = "none";
-    channelSite_l.style.display = "none";
+    navigationContainer.style.display = "none";
+    postContainer.style.display = "none";
+    loader.style.display = "none";
+    authForm.style.display = "none";
+    followingSite.style.display = "none";
+    channelSite.style.display = "none";
 }
 
 async function userHasJWT() {
@@ -70,10 +84,10 @@ async function userHasJWT() {
     if (response.ok) {
         const data = await response.json();
         localStorage.setItem("jwToken", data.jwToken);
-        userId = data.userId;
-        following = data.following || [];
         showLoggedInButtons();
-        goToHomePage.style.display = "none"
+        userId = data.userId;
+        username = data.username;
+        following = data.following || [];
 
 
         alert(data.message)
@@ -91,7 +105,7 @@ async function deleteAccount() {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${jwToken}`
         },
-        body: JSON.stringify({ username: lisuInput1_l.value, password: lisuInput2_l.value })
+        body: JSON.stringify({ username: authUsernameInput.value, password: authPasswordInput.value })
     })
 
     const data = await response.json();
@@ -108,38 +122,84 @@ async function deleteAccount() {
 function resizeChannel() {
     if (!currentChannelImages) return;
 
-    styleChannelImages(
-        currentChannelImages, 
-        channelContent_l, 
-        window.innerWidth
-    );
+    const w = innerWidth;
+
+    const imagesPerLine = Math.max(1, Math.floor(w/204));
+    let createdImages = 0;
+    const lines = Math.ceil(currentChannelImages.length / imagesPerLine);
+    channelContent.innerHTML = "";
+    
+    for (let a = 0; a < lines; a++) {
+        const div = document.createElement("div")
+
+        for (let i = createdImages; i < currentChannelImages.length && i < createdImages + imagesPerLine; i++) {
+            const img = document.createElement("img");
+            img.src = "images/" + currentChannelImages[i].filename;
+            img.dataset.id = currentChannelImages[i]._id;
+            img.dataset.imageNumber = i;
+            img.className = "channelImage";
+            div.prepend(img)
+        }
+        channelContent.prepend(div);
+        createdImages += imagesPerLine
+    }
 }
 
 function updateLikeAndFollowButtons(imageNumber) {
     if (userId != images[imageNumber].owner._id && userId) {
-        likeBtn_l.style.display = "block";
-        followBtn_l.style.display = "block";
+        likeBtn.style.display = "block";
+        followBtn.style.display = "block";
+        openCommentsBtn.style.display = "block";
         if (images[imageNumber].likes.includes(userId)) {
             imgLiked = true;
-            likeBtn_l.src = "styleImages/heartRB.png";
+            likeBtn.src = "styleImages/redHeart.webp";
+            likeBtn.alt = "Liked"
         } else {
             imgLiked = false;
-            likeBtn_l.src = "styleImages/heartWB.png";
+            likeBtn.src = "styleImages/emptyHeart.webp";
+            likeBtn.alt = "Not liked"
         }
         if (following.some(user => user._id === images[imageNumber].owner._id)) {
-            followBtn_l.src = "styleImages/unfollow.png";
-            followBtn_l.title = "Unfollow"
+            followBtn.src = "styleImages/unfollow.webp";
+            followBtn.title = "Unfollow"
+            followBtn.alt = "Unfollow"
             followed = true;
         } else {
-            followBtn_l.src = "styleImages/follow.png";
-            followBtn_l.title = "Follow"
+            followBtn.src = "styleImages/follow.webp";
+            followBtn.title = "Follow"
+            followBtn.alt = "Follow"
             followed = false;
         }
     } else {
-        likeBtn_l.style.display = "none";
-        followBtn_l.style.display = "none";
+        likeBtn.style.display = "none";
+        followBtn.style.display = "none";
+        if (!userId) {
+            openCommentsBtn.style.display = "none";
+        }
     }
 }
+
+function createComment(comment) {    
+    const article = document.createElement("article");
+    article.className = "comment";
+
+    const h3 = document.createElement("h3");
+    h3.className = "commenterUsername";
+    h3.textContent = comment.userId?.username ?? "Deleted User";
+
+    const p = document.createElement("p");
+    p.className = "commentText";
+    p.textContent = comment.text;
+
+    article.append(h3, p);
+    return article;
+}
+
+document.querySelectorAll(".canBecomeActive").forEach(button => {
+    button.addEventListener("click", ()=>{
+        activateNavigationButton(button);
+    })
+})
 
 window.addEventListener("resize", resizeChannel);
 
@@ -158,31 +218,80 @@ await fetch("/api/images")
     if (images.length > 0) {
         const randomImg = Math.floor(Math.random() * images.length)
         currentImg = randomImg;
-        postImg.src = "../images/" + images[randomImg].filename;
-        imgH2_l.innerText = images[randomImg].owner?.username ?? "Unknown user";
+        postImage.src = "../images/" + images[randomImg].filename;
+        ownerName.innerText = images[randomImg].owner?.username ?? "Unknown user";
+        ownerName.dataset._id = images[randomImg].owner?._id ?? "";
         updateLikeAndFollowButtons(randomImg)
+
+        commentsDiv.innerHTML = "";
+
+        if(images[randomImg].comments) {
+            for (const comment of images[randomImg].comments) {
+                commentsDiv.prepend(createComment(comment, images[randomImg]._id))
+            }
+        }
+
     }
 })
 })()
 
 
-postImg.addEventListener("click", ()=>{
-    if (images.length > 0) {
+postImage.addEventListener("click", ()=>{
+    if (images.length > 1) {
         let randomImg;
         do {
             randomImg = Math.floor(Math.random() * images.length);
         } while (randomImg === currentImg);
         
         currentImg = randomImg;
-        postImg.src = "../images/" + images[randomImg].filename;
-        imgH2_l.innerText = images[randomImg].owner?.username ?? "Unknown user";
+        postImage.src = "../images/" + images[randomImg].filename;
+        ownerName.innerText = images[randomImg].owner?.username ?? "Unknown user";
+        ownerName.dataset._id = images[randomImg].owner?._id ?? "";
         updateLikeAndFollowButtons(randomImg)
+
+        commentsDiv.innerHTML = "";
+
+        if(images[randomImg].comments) {
+            for (const comment of images[randomImg].comments) {
+                commentsDiv.prepend(createComment(comment))
+            }
+        }
     } else {
         console.log("The images aren't loading right now.")
     }
 })
 
-likeBtn_l.addEventListener("click", async ()=>{
+ownerName.addEventListener("click", async ()=>{
+    const channelId = ownerName.dataset._id;
+    if (channelId) {
+        const response = await fetch("/api/images/otherChannel", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ channelId })
+        })
+
+        if (!response.ok) return;
+
+        if (following.some(user => user._id === channelId)) {
+            followed = true;
+            channelSiteFollowBtn.innerText = "Unfollow"
+        } else {
+            followed = false;
+            channelSiteFollowBtn.innerText = "Follow"
+        }
+
+        postContainer.style.display = "none";
+        channelSite.style.display = "block";
+        channelSiteFollowBtn.style.display = "inline-block"
+        channelSiteH2.innerText = ownerName.innerText;
+        currentChannelName = ownerName.innerText;
+        currentChannelImages = await response.json();
+
+        resizeChannel();
+    }
+})
+
+likeBtn.addEventListener("click", async ()=>{
     let response = '';
 
     if (!imgLiked) {
@@ -196,14 +305,15 @@ likeBtn_l.addEventListener("click", async ()=>{
         })
 
 
-        if (!response.ok) {
+        if (!response.ok) {                                                                                
             return;
         }
 
-        likeBtn_l.src = "styleImages/heartRB.png";
+        likeBtn.src = "styleImages/redHeart.webp";
+        likeBtn.alt = "Liked"
         imgLiked = true;
     } else {
-        response = await fetch("/api/unlike", {
+        response = await fetch("/api/like", {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",
@@ -216,7 +326,8 @@ likeBtn_l.addEventListener("click", async ()=>{
             return;
         }
 
-        likeBtn_l.src = "styleImages/heartWB.png";
+        likeBtn.src = "styleImages/emptyHeart.webp";
+        likeBtn.alt = "Not liked"
         imgLiked = false
     }
 
@@ -227,60 +338,61 @@ likeBtn_l.addEventListener("click", async ()=>{
 
 
 document.getElementById("showLoginForm").addEventListener("click", ()=>{
-    lisu = "li";
-    lisuH1_l.innerText = "Log In";
-    lisuSubmitBtn_l.innerText = "Log In";
+    authFormAction = "login";
+    authFormTitle.innerText = "Log In";
+    authSubmitBtn.innerText = "Log In";
     hideAllElements()
-    lisuForm_l.style.display = "block";
+    authForm.style.display = "block";
 });
 
 document.getElementById("showSignUpForm").addEventListener("click", ()=>{
-    lisu = "su"
-    lisuH1_l.innerText = "Sign Up";
-    lisuSubmitBtn_l.innerText = "Sign Up"
+    authUsernameInput.value = "";
+    authPasswordInput.value = "";
+    authFormAction = "signup"
+    authFormTitle.innerText = "Sign Up";
+    authSubmitBtn.innerText = "Sign Up"
     hideAllElements()
-    lisuForm_l.style.display = "block";
+    authForm.style.display = "block";
 });
-
 showDeleteAcctForm.addEventListener("click", ()=>{
-    lisu = "da"
-    lisuH1_l.innerText = "Delete Account";
-    lisuSubmitBtn_l.innerText = "Delete Account"
-    hideAllElements()
-    lisuForm_l.style.display = "block";
-    showLoggedInButtons();
-    showDeleteAcctForm.style.display = "none"
-    
+    authUsernameInput.value = "";
+    authPasswordInput.value = "";
+    authFormAction = "deleteAccount";
+    authFormTitle.innerText = "Delete Account";
+    authSubmitBtn.innerText = "Delete Account";
+    hideAllElements();
+    authForm.style.display = "block";
 })
 
 document.getElementById("closeBtn").addEventListener("click", ()=>{
-    lisuForm_l.style.display = "none";
-    header_l.style.display = "flex";
-    imgDiv_l.style.display = "block";
-    lisuInput1_l.value = "";
-    lisuInput2_l.value = "";
+    activateNavigationButton(goToHomePage);
+    authForm.style.display = "none";
+    postContainer.style.display = "block";
+    navigationContainer.style.display = "block"
+    authUsernameInput.value = "";
+    authPasswordInput.value = "";
 })
 
-lisuForm_l.addEventListener("submit", async (e)=>{
+authForm.addEventListener("submit", async (e)=>{
     try {
         e.preventDefault();
         let response = "";
         hideAllElements();
-        loader_l.style.display = "block";
+        loader.style.display = "block";
 
-        if (lisu === "su") {
+        if (authFormAction === "signup") {
             response = await fetch("/api/signup", {
                 method: "POST",
                 headers: { "Content-Type": "application/json"},
-                body: JSON.stringify({ username: lisuInput1_l.value, password: lisuInput2_l.value })
+                body: JSON.stringify({ username: authUsernameInput.value, password: authPasswordInput.value })
             })
-        } else if (lisu === "li") {
+        } else if (authFormAction === "login") {
             response = await fetch("/api/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username: lisuInput1_l.value, password: lisuInput2_l.value })
+                body: JSON.stringify({ username: authUsernameInput.value, password: authPasswordInput.value })
             })
-        } else if (lisu === "da") {
+        } else if (authFormAction === "deleteAccount") {
             await deleteAccount();
             return;
         }
@@ -289,24 +401,25 @@ lisuForm_l.addEventListener("submit", async (e)=>{
 
         if (!response.ok) {
             alert(data.message);
-            lisuInput2_l.value = "";
-            loader_l.style.display = "none";
-            header_l.style.display = "flex";
-            lisuForm_l.style.display = "block";
+            authPasswordInput.value = "";
+            loader.style.display = "none";
+            navigationContainer.style.display = "block";
+            authForm.style.display = "block";
             return;
         }
 
         userId = data.userId;
+        username = authUsernameInput.value;
         following = data.following || [];
-        loader_l.style.display = "none";
-        header_l.style.display = "flex";
-        imgDiv_l.style.display = "block";
-        lisuInput1_l.value = "";
-        lisuInput2_l.value = "";
+        loader.style.display = "none";
+        navigationContainer.style.display = "block";
+        postContainer.style.display = "block";
+        authUsernameInput.value = "";
+        authPasswordInput.value = "";
         jwToken = data.jwToken;
         localStorage.setItem("jwToken", jwToken);
+        activateNavigationButton(goToHomePage);
         showLoggedInButtons();
-        goToHomePage.style.display = "none"
 
         alert(data.message)
     } catch (err) {
@@ -314,9 +427,9 @@ lisuForm_l.addEventListener("submit", async (e)=>{
     }
 })
 
-followBtn_l.addEventListener("click", async (e)=>{
+followBtn.addEventListener("click", async ()=>{
     if (followed) {
-        const response = await fetch("/api/unfollow", {
+        const response = await fetch("/api/follow", {
             method: "DELETE",
             headers: { 
                 "Content-Type": "application/json",
@@ -331,11 +444,11 @@ followBtn_l.addEventListener("click", async (e)=>{
         }
 
         followed = false;
-        followBtn_l.title = "Follow"
+        followBtn.title = "Follow"
         following = following.filter(
             user => user._id !== images[currentImg].owner._id
         );
-        followBtn_l.src = "styleImages/follow.png";
+        followBtn.src = "styleImages/follow.webp";
     } else {
         const response = await fetch("/api/follow", {
             method: "POST",
@@ -352,12 +465,12 @@ followBtn_l.addEventListener("click", async (e)=>{
         }
 
         followed = true;
-        followBtn_l.title = "UnFollow"
+        followBtn.title = "UnFollow"
         following.push({
             _id: images[currentImg].owner._id,
             username: images[currentImg].owner.username
         });
-        followBtn_l.src = "styleImages/unfollow.png";
+        followBtn.src = "styleImages/unfollow.webp";
     }
 })
 
@@ -371,12 +484,10 @@ document.getElementById("goToUploadPage").addEventListener("click", ()=>{
 })
 
 goToFollowingPage.addEventListener("click", ()=>{
-    showLoggedInButtons();
-    goToFollowingPage.style.display = "none"
     hideAllElements();
-    header_l.style.display = "flex"
-    followingSite_l.style.display = "block"
-    followingList_l.innerHTML = "";
+    navigationContainer.style.display = "block"
+    followingSite.style.display = "block"
+    followingList.innerHTML = "";
     following.forEach(user=>{
         const a = document.createElement("a");
         a.classList = "followedChannelA";
@@ -386,7 +497,7 @@ goToFollowingPage.addEventListener("click", ()=>{
         a.href = "#";
         a.style.display = "block";
 
-        followingList_l.appendChild(a);
+        followingList.prepend(a);
     })
 })
 
@@ -413,12 +524,29 @@ document.addEventListener("click", async (e)=>{
         channelSiteFollowBtn.innerText = "Follow"
     }
 
-    showLoggedInButtons();
-    followingSite_l.style.display = "none"
-    showDeleteAcctForm.style.display = "none";
-    channelSite_l.style.display = "block";
-    channelSiteH2_l.innerText = currentChannelName;
+    followingSite.style.display = "none"
+    channelSite.style.display = "block";
+    channelSiteFollowBtn.style.display = "inline-block"
+    channelSiteH2.innerText = currentChannelName;
     currentChannelImages = await response.json();
+
+    resizeChannel();
+})
+
+goToProfilePage.addEventListener("click", async ()=>{
+    const response = await fetch("/api/images/my", {
+        headers: { "Authorization": `Bearer ${jwToken}`}
+    });
+
+    if(!response.ok) return;
+
+    hideAllElements();
+    navigationContainer.style.display = "block";
+    channelSite.style.display = "block";
+    channelSiteH2.innerText = username;
+    channelSiteFollowBtn.style.display = "none"
+    currentChannelImages = await response.json();
+    currentChannelName = username;
 
     resizeChannel();
 })
@@ -427,10 +555,8 @@ document.addEventListener("click", (e)=>{
     const img = e.target.closest(".channelImage");
     if (!img) return;
     const imageNumber = Number(img.dataset.imageNumber);
-    postImg.src = img.src;
-    showLoggedInButtons();
-    goToHomePage.style.display = "none";
-    imgH2_l.innerText = currentChannelImages[imageNumber].owner?.username ?? "Unknown user"
+    postImage.src = img.src;
+    ownerName.innerText = currentChannelName ?? "Unknown user"
     currentImg = images.findIndex(
         image => image._id === currentChannelImages[imageNumber]._id
     );
@@ -438,16 +564,14 @@ document.addEventListener("click", (e)=>{
 
     updateLikeAndFollowButtons(currentImg);
 
-    header_l.style.display = "flex";
-    imgDiv_l.style.display = "block";
+    navigationContainer.style.display = "block";
+    postContainer.style.display = "block";
 })
 
 goToHomePage.addEventListener("click", ()=>{
-    showLoggedInButtons();
-    goToHomePage.style.display = "none";
     hideAllElements();
-    imgDiv_l.style.display = "block";
-    header_l.style.display = "flex"
+    postContainer.style.display = "block";
+    navigationContainer.style.display = "block"
 })
 
 channelSiteFollowBtn.addEventListener("click", async ()=>{
@@ -492,5 +616,58 @@ channelSiteFollowBtn.addEventListener("click", async ()=>{
             _id: currentChannelOwnerId,
             username: currentChannelName
         })
+    }
+})
+
+openCommentsBtn.addEventListener("click", ()=>{
+        commentContainer.style.display = "block";
+})
+
+document.getElementById("closeComments").addEventListener("click", ()=>{
+    commentContainer.style.display = "none";
+})
+
+document.getElementById("commentContainer").addEventListener("submit", async (e)=>{
+    e.preventDefault()
+    const commentText = commentInput.value;
+    
+    const response = await fetch("/api/comment", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${jwToken}`
+        },
+        body: JSON.stringify({ commentText, imageId: images[currentImg]._id})
+    });
+    if (!response.ok) {
+        console.error("Somethink went wrong");
+        console.log(response)
+        return;
+    }
+
+    commentInput.value = "";
+
+    const data = await response.json();
+    const comments = data.comments;
+
+    commentsDiv.innerText = "";
+
+    for (const comment of comments) {
+        commentsDiv.prepend(createComment(comment))
+    }
+
+})
+
+document.getElementById("sidebarToggle").addEventListener("click", ()=>{
+    if (sidebarVisible) {
+        navigationMenu.style.display = "none";
+        document.getElementById("navigationHr").style.display = "none";
+        navigationContainer.style.background = "transparent";
+        sidebarVisible = false;
+    } else {
+        navigationMenu.style.display = "block";
+        document.getElementById("navigationHr").style.display = "block";
+        navigationContainer.style.background = "black";
+        sidebarVisible = true;
     }
 })

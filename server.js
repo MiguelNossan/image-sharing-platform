@@ -61,16 +61,17 @@ app.get(
     asyncHandler(async (req, res)=>{
         const images = await Image.find()
         .populate("owner", "username")
+        .populate("comments.userId")
         .lean();
         res.json(images);
     })
 );
 
 app.get(
-    "/api/images/my", 
-    authMiddleware, 
+    "/api/images/my",
+    authMiddleware,
     asyncHandler(async (req, res)=>{
-        const images = await Image.find({ owner: req.user._id });
+        const images = await Image.find({ owner: req.user._id })
         res.json(images);
     })
 );
@@ -211,6 +212,7 @@ app.post('/api/jwtlogin', authMiddleware, async (req, res)=>{
             message: `You're logged in as ${req.user.username}`,
             jwToken: newJWT,
             userId: req.user._id,
+            username: req.user.username,
             following: populatedUser.following.map(user => ({
                 _id: user._id,
                 username: user.username
@@ -284,7 +286,7 @@ app.post(
 );
 
 app.delete(
-    "/api/unlike", 
+    "/api/like", 
     authMiddleware, 
     asyncHandler(async (req, res)=>{
         const image = await Image.findByIdAndUpdate(
@@ -311,7 +313,6 @@ app.post(
 
         if (req.user._id === userToFollowId) {
             return res.status(500).send({
-                success: true,
                 message: "You can't follow yourself."
             })
         }
@@ -324,14 +325,174 @@ app.post(
             }
         )
         res.status(200).json({
-            success: true,
             message: "Followed successfully"
         })
     })
 )
 
+app.post(
+    "/api/comment",
+    authMiddleware,
+    asyncHandler(async (req, res)=>{
+        const { commentText, imageId } = req.body;
+
+        const updatedImage = await Image.findByIdAndUpdate(
+            imageId,
+            {
+                $push: {
+                    comments: {
+                        userId: req.user._id,
+                        text: commentText
+                    }
+                }
+            },
+            { returnDocument: "after" }
+        ).populate("comments.userId")
+
+        res.status(201).json({
+            comments: updatedImage.comments
+        })
+    })
+)
+
+
+
+app.post(
+    "/api/comment/like",
+    authMiddleware,
+    asyncHandler(async (req, res) => {
+        const { commentId, imageId } = req.body;
+        const userId = req.user._id;
+
+        const image = await Image.findOne({
+            _id: imageId,
+            "comments._id": commentId
+        });
+
+        if (!image) {
+            return res.status(404).json({
+                message: "Image or comment not found"
+            });
+        }
+
+        const comment = image.comments.id(commentId);
+
+        if (!comment) {
+            return res.status(404).json({
+                message: "Comment not found"
+            });
+        }
+
+        comment.likes ??= [];
+
+        const alreadyLiked = comment.likes.some(
+            id => id.toString() === userId.toString()
+        );
+
+        if (!alreadyLiked) {
+            comment.likes.push(userId);
+            await image.save();
+        }
+
+        const savedImage = await Image.findById(imageId);
+        const savedComment = savedImage?.comments.id(commentId);
+
+        if (!savedComment) {
+            return res.status(404).json({
+                message: "Comment not found after save"
+            });
+        }
+
+        const likes = savedComment.likes ?? [];
+
+        console.log("Likes in database:", likes.map(
+            id => id.toString()
+        ));
+
+        return res.status(200).json({
+            message: "Like saved",
+            likes
+        });
+    })
+);
+
+
+/*
+app.post(
+    "/api/comment/like",
+    authMiddleware,
+    asyncHandler(async (req, res)=>{
+        const { commentId, imageId } = req.body;
+
+        const image = await Image.findOneAndUpdate(
+            {
+                _id: imageId,
+                "comments._id": commentId
+            },
+            {
+                $addToSet: {
+                    "comments.$[comment].likes": req.user._id
+                }
+            },
+            {
+                arrayFilters: [
+                    { "comment._id": commentId }
+                ],
+                returnDocument: "after",
+                timestamps: false
+            }
+        )
+
+        console.log(imageId);
+
+        if (!image) {
+            return res.status(404).json({
+                message: "Image or comment not found"
+            });
+        }
+
+        res.json(image)
+    })
+)*/
+
+
+
 app.delete(
-    "/api/unfollow",
+    "/api/comment/like",
+    authMiddleware,
+    asyncHandler(async (req, res)=>{
+        const { commentId, imageId } = req.body;
+        const image = await Image.findOneAndUpdate(
+            {
+                _id: imageId,
+                "comments._id": commentId
+            },
+            {
+                $pull: {
+                    "comments.$[comment].likes": req.user._id
+                }
+            },
+            {
+                arrayFilters: [
+                    { "comment._id": commentId }
+                ],
+                returnDocument: "after",
+                timestamps: false
+            }
+        )
+
+        if (!image) {
+            return res.status(404).json({
+                message: "Image or comment not found"
+            });
+        }
+
+        res.json(image)
+    })
+)
+
+app.delete(
+    "/api/follow",
     authMiddleware,
     asyncHandler(async (req, res)=>{
         const { userToFollowId } = req.body;
@@ -344,7 +505,6 @@ app.delete(
             }
         )
         res.status(200).json({
-            success: true,
             message: "Unfollowed successfully"
         })
     })
@@ -380,7 +540,6 @@ app.delete(
         await img.deleteOne();
 
         res.status(200).json({
-            success: true,
             deletedId: img._id,
             message: "Image deleted successfully"
         });

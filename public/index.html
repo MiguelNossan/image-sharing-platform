@@ -3,68 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>itn-images</title>
 
     <link rel="stylesheet" href="css/index/fonts.css">
     <link rel="stylesheet" href="css/index/style.css">
-    <link rel="stylesheet" href="css/index/header.css"> 
+    <link rel="stylesheet" href="css/index/navigation.css">
     <link rel="stylesheet" href="css/index/channelSite.css">
+    <link rel="stylesheet" href="css/index/postContainer.css">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <header>
-        <button id="showLoginForm" class="headerBtn loggedOutHeaderBtn openSans">Log In</button> 
-        <button id="showSignUpForm" class="headerBtn loggedOutHeaderBtn openSans">Sign Up</button> 
-        <button id="goToHomePage" class="headerBtn loggedInHeaderBtn openSans">Home</button>
-        <button id="logOutBtn" class="headerBtn loggedInHeaderBtn openSans">Log Out</button>
-        <button id="showDeleteAcctForm" class="headerBtn loggedInHeaderBtn openSans">Del Acct</button>
-        <button id="goToUploadPage" class="headerBtn loggedInHeaderBtn openSans">Upload</button> 
-        <button id="goToProfilePage" class="headerBtn loggedInHeaderBtn openSans" title="This feature will be available in a future update.">You</button> 
-        <button id="goToFollowingPage" class="headerBtn loggedInHeaderBtn openSans">Following</button>
-    </header>
+
+
+
+    <div id="navigationContainer">
+        <img id="sidebarToggle" src="styleImages/burger-barWhite.png" alt="Open Burger-Menu">
+        <hr id="navigationHr">
+        <nav id="navigationMenu">
+            <button id="showLoginForm" class="navigationButton loggedOutNavigationButton openSans">Log In</button> 
+            <button id="showSignUpForm" class="navigationButton loggedOutNavigationButton openSans">Sign Up</button> 
+            <button id="goToHomePage" class="navigationButton loggedInNavigationButton canBecomeActive active openSans">Home</button>
+            <button id="logOutBtn" class="navigationButton loggedInNavigationButton openSans">Log Out</button>
+            <button id="showDeleteAcctForm" class="navigationButton loggedInNavigationButton openSans">Del Acct</button>
+            <button id="goToUploadPage" class="navigationButton loggedInNavigationButton openSans">Upload</button>
+            <button id="goToProfilePage" class="navigationButton loggedInNavigationButton canBecomeActive openSans">You</button>
+            <button id="goToFollowingPage" class="navigationButton loggedInNavigationButton canBecomeActive openSans">Following</button>
+        </nav>
+    </div>
+    
      <main>
-        <div id="imgDiv">
-            <img id="postImg" src="">
-            <img title="Like" id="like" src="styleImages/heartWB.png" >
-            <img title="Follow" id="follow" src="styleImages/follow.png">
-            <h2 id="imgH2" class="playfairDisplay"></h2>
-        </div>
+        <article id="postContainer">
+            <img id="postImage" src="../images/1783226501141-Jack.png">
+            <img title="Like" id="like">
+            <img title="Follow" id="follow">
+            <img title="Comments" id="openCommentsBtn" alt="Comments" src="styleImages/comments.webp">
+            <section id="commentContainer">
+                <img id="closeComments" title="Close Comments" src="styleImages/close(12).png" alt="Close">
+                <h2 id="commentContainerTitle">Comments</h2>
+                <form>
+                    <label for="commentInput" class="visuallyHidden">Your Message</label>
+                    <input id="commentInput" placeholder="Your Message" maxlength="300" required> 
+                    <button type="submit" id="commentButton">Comment</button>
+                </form>
+                <div id="comments"></div>
+            </section>
+            <h2 id="ownerName" class="playfairDisplay"></h2>
+        </article>
 
         <div id="loader"></div>
 
-        <form id="lisuForm" class="merriweather">
+        <form id="authForm" class="merriweather">
             <img id="closeBtn" title="Close" src="styleImages/close.png" alt="Close">
-            <h1 id="lisuH1"></h1>
-            <label class="lisuLabel">
+            <h1 id="authFormTitle"></h1>
+            <label for="authUsernameInput" class="authLabel">
                 Name <br>
-                <input id="lisuInput1" type="text" minlength="3" maxlength="20" placeholder="e.g. Baguette" required>
+                <input id="authUsernameInput" type="text" minlength="3" maxlength="20" placeholder="e.g. Baguette" required>
             </label> <br>
-            <label class="lisuLabel">
+            <label for="authPasswordInput" class="authLabel">
                 Password <br>
-                <input id="lisuInput2" type="password" minlength="4" maxlength="100" required>
+                <input id="authPasswordInput" type="password" minlength="4" maxlength="100" required>
             </label> <br>
-            <button id="lisuSubmitBtn" type="submit"></button>
+            <button id="authSubmitBtn" type="submit"></button>
         </form>
     </main>
 
-    <div id="followingSite">
+    <section id="followingSite">
         <h2>Following:</h2>
         <div id="followingList">
             
         </div>
-    </div>
+    </section>
 
-    <div id="channelSite">
+    <section id="channelSite">
         <h2 id="channelSiteH2" class="playfairDisplay">MiguelleGazelle</h2>
         <button id="channelSiteFollowBtn" class="playfairDisplay">Unfollow</button>
         <div id="channelContent"></div>
-    </div>
+    </section>
  
 
-    <script src="js/index/style.js"></script>
+    <!--<script src="js/index/style.js"></script>-->
     <script src="js/index/logic.js" type="module"></script>
 </body>
 </html>

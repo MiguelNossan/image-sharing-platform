@@ -19,7 +19,7 @@ async function reload() {
             headers: {
                 "Authorization": `Bearer ${jwToken}`
             }
-        })
+        });
 
         if (!response.ok) {
             throw new Error(`HTTP Error ${response.status}`)
@@ -39,7 +39,7 @@ async function reload() {
                 <p><span>${file.likes.length}</span> Likes</p>
                 <img data-img-id="${file._id}" class="deleteBtn" src="styleImages/delete.png" title="Delete">
             `
-            gallery.appendChild(div);
+            gallery.prepend(div);
         });
     } catch (err) {
         console.error(err)

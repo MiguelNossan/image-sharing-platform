@@ -9,67 +9,8 @@ main {
     margin-top: 65px;
 }
 
-#imgDiv {
-    position: relative;
-    margin: auto;
-}
 
-#like {
-    display: none;
-    position: absolute;
-    height: 10%;
-    width: auto;
-    right: 0;
-    top: 30%;
-}
-
-#follow {
-    display: none;
-    position: absolute;
-    height: 10%;
-    width: auto;
-    right: 0;
-    top: 40%;
-}
-
-#postImg {
-    display: block;
-    object-fit: cover;
-}
-
-#imgDiv h2 {
-    position: absolute;
-    bottom: 0%;
-    left: 5%;
-    font-size: 50px;
-    font-weight: 700;
-    margin: 0;
-    background: linear-gradient(
-        to right, 
-        #ef5350, 
-        #f48fb1, 
-        #7e57c2, 
-        #2196f3, 
-        #26c6da, 
-        #43a047, 
-        #eeff41, 
-        #f9a825, 
-        #ff5722
-    );
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
-    -webkit-text-fill-color: transparent;
-
-    filter:
-        drop-shadow(1px 1px 1px black)
-        drop-shadow(2px 2px 1px black);
-}
-
-
-
-
-#lisuForm{
+#authForm{
     z-index: 4;
     background-color: rgba(142, 133, 133, 0.212);
     border: 5px solid rgba(94, 93, 93, 0.437);
@@ -89,7 +30,7 @@ form h1 {
     margin-bottom: 5px;
 }
 
-.lisuLabel {
+.authLabel {
     font-size: 25px;
 }
 
@@ -164,4 +105,16 @@ form button:active {
 
 #followingList a {
     font-size: clamp(0.8vw, 20px, 4.5vw);
+}
+
+.visuallyHidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
